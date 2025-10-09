@@ -1,22 +1,26 @@
 [
-  {
-    "key": "add",
-    "text": "Add animal 🐒"
-  },
-  {
-    "key": "allAnimal",
-    "text": "All animals in the zoo 🦁"
-  },
-  {
-    "key": "handAnimal",
-    "text": "Candidates for petting zoo 🐰"
-  },
-  {
-    "key": "allZoo",
-    "text": "Zoo database 📚"
-  },
-  {
-    "key": "changeLanguage",
-    "text": "Change language 🌐"
-  }
+	{
+		"key": "add",
+		"text": "Add animal 🐒"
+	},
+	{
+		"key": "allAnimal",
+		"text": "All animals in the zoo 🦁"
+	},
+	{
+		"key": "handAnimal",
+		"text": "Candidates for petting zoo 🐰"
+	},
+	{
+		"key": "allZoo",
+		"text": "Zoo database 📚"
+	},
+	{
+		"key": "changeLanguage",
+		"text": "Change language 🌐"
+	},
+	{
+		"key": "exit",
+		"text": "EXIT ❌"
+	}
 ]

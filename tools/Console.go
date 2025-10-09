@@ -1,92 +1,192 @@
 package tools
 
 import (
+	"bufio"
 	"fmt"
-	
-	"github.com/gdamore/tcell/v2"
-	"github.com/rivo/tview"
+	animals "main/Animals"
+	"main/abstraction"
+	db "main/bd"
+	"os"
+	"strconv"
+	"strings"
 )
 
 var items []MenuItem
+var scanner *bufio.Scanner
+
+func init() {
+	scanner = bufio.NewScanner(os.Stdin)
+}
 
 func WriteConsole() {
 	if items == nil {
 		items = ReadFile("ru")
 	}
-	app := tview.NewApplication()
-	i := 1
-	menu := tview.NewList()
-	for _, item := range items {
-		displayText := fmt.Sprintf("%d) %s", i, item.Text)
-		menu.AddItem(displayText, "", 0, func() { SearchFunction(item.Key, app, menu) })
-		i++
-	}
-	menu.AddItem(fmt.Sprintf("%d) [red::bu]ВЫХОД ❌", len(items)+1), "", 0, func() {
-		app.Stop()
-	})
-	menu.SetBorder(true).SetTitle("================ZOO================").SetTitleAlign(tview.AlignCenter)
-	if err := app.SetRoot(menu, true).Run(); err != nil {
-		panic(err)
+
+	for {
+		showMenu()
+		choice := getUserChoice()
+
+		if choice == len(items)+1 {
+			fmt.Println("\n❌ Выход из программы...")
+			break
+		}
+
+		if choice > 0 && choice <= len(items) {
+			SearchFunction(items[choice-1].Key)
+		} else {
+			fmt.Println("\n⚠️  Неверный выбор! Попробуйте снова.")
+		}
 	}
 }
 
-func SearchFunction(keyFunction string, app *tview.Application, menu *tview.List) {
+func showMenu() {
+	fmt.Println("\n================ZOO================")
+	for i, item := range items {
+		fmt.Printf("%d) %s\n", i+1, item.Text)
+	}
+	fmt.Println("====================================")
+}
+
+func getUserChoice() int {
+	fmt.Print("Выберите пункт меню: ")
+	scanner.Scan()
+	input := scanner.Text()
+
+	choice, err := strconv.Atoi(strings.TrimSpace(input))
+	if err != nil {
+		return -1
+	}
+	return choice
+}
+
+func SearchFunction(keyFunction string) {
 	switch keyFunction {
 	case "add":
-		AddAnimal(app, menu)
+		GetAnimal()
 	case "allAnimal":
-		// TODO: функция для отображения всех животных
+		fmt.Println("\n📋 Функция отображения всех животных еще не реализована")
+		waitForEnter()
 	case "handAnimal":
-		// TODO: функция для отображения контактных животных
+		fmt.Println("\n🐰 Функция отображения контактных животных еще не реализована")
+		waitForEnter()
 	case "allZoo":
-		// TODO: функция для базы данных зоопарка
+		fmt.Println("\n📚 Функция базы данных зоопарка еще не реализована")
+		waitForEnter()
 	case "changeLanguage":
-		changeLanguage(app, menu)
+		changeLanguage()
+	case "exit":
+		os.Exit(0)
 	default:
-		// TODO: обработка неизвестного ключа
+		fmt.Println("\n❓ Неизвестная функция")
+		waitForEnter()
 	}
 }
 
-func changeLanguage(app *tview.Application, menu *tview.List) {
-	// создаём поле для ввода языка
-	input := tview.NewInputField().
-		SetLabel("Введите язык ('ru', 'en', 'ch'): ").
-		SetFieldWidth(10)
+func changeLanguage() {
+	fmt.Println("\n🌐 Смена языка")
+	fmt.Println("Доступные языки: ru, en, ch")
+	fmt.Print("Введите язык: ")
 
-	input.SetDoneFunc(func(key tcell.Key) {
-		language := input.GetText()
-		items = ReadFile(language)
+	scanner.Scan()
+	language := strings.TrimSpace(scanner.Text())
 
-		menu.Clear()
-		for i, item := range items {
-			displayText := fmt.Sprintf("%d) %s", i+1, item.Text)
-			currentKey := item.Key
-			menu.AddItem(displayText, "", 0, func() { SearchFunction(currentKey, app, menu) })
-		}
-		menu.AddItem(fmt.Sprintf("%d) [red::bu]ВЫХОД ❌", len(items)+1), "", 0, func() {
-			app.Stop()
-		})
-
-		// возвращаемся обратно к меню
-		app.SetRoot(menu, true).SetFocus(menu)
-	})
-
-	// показываем поле ввода вместо меню
-	app.SetRoot(input, true).SetFocus(input)
+	newItems := ReadFile(language)
+	if newItems != nil {
+		items = newItems
+		fmt.Printf("✅ Язык успешно изменен на '%s'\n", language)
+	} else {
+		fmt.Printf("❌ Не удалось загрузить язык '%s'. Используется предыдущий.\n", language)
+	}
+	waitForEnter()
 }
 
-func AddAnimal(app *tview.Application, menu *tview.List) {
-	
-	
-	
-	GetValidFood(app, menu, func(foodAmount int) {
+func AddAnimal() {
+	fmt.Println("\n🐒 Добавление животного")
 
-		confirmation := tview.NewModal().
-			SetText(fmt.Sprintf("✅ Успешно! Количество еды: %d", foodAmount)).
-			AddButtons([]string{"OK"}).
-			SetDoneFunc(func(buttonIndex int, buttonLabel string) {
-				app.SetRoot(menu, true)
-			})
-		app.SetRoot(confirmation, true)
-	})
+	foodAmount := GetValidFood()
+	if foodAmount <= 0 {
+		fmt.Println("❌ Отмена добавления животного")
+		return
+	}
+
+	fmt.Printf("✅ Успешно! Количество еды: %d\n", foodAmount)
+
+	waitForEnter()
+}
+
+func waitForEnter() {
+	fmt.Print("\nНажмите Enter для продолжения...")
+	scanner.Scan()
+}
+
+func GetName() string {
+	fmt.Print("Введите имя животного: ")
+	scanner.Scan()
+	return scanner.Text()
+}
+
+func GetValidFood() int {
+	fmt.Print("Введите необходимое количество еды: ")
+	scanner.Scan()
+	input := scanner.Text()
+	value, err := strconv.Atoi(strings.TrimSpace(input))
+	if err != nil || value <= 0 {
+		fmt.Println("❌ Не коректные данные")
+		return 0
+	}
+	fmt.Println("✅ Успешно!")
+	waitForEnter()
+	return value
+}
+
+func GetFriendless() int {
+	fmt.Print("Введите уровень дружелюбности: ")
+	scanner.Scan()
+	input := scanner.Text()
+	value, err := strconv.Atoi(strings.TrimSpace(input))
+	if err != nil || value < 0 || value > 10 {
+		fmt.Println("❌ Не коректные данные")
+		return 0
+	}
+	fmt.Println("✅ Успешно!")
+	waitForEnter()
+	return value
+}
+
+func GetAnimal() abstraction.IALive {
+	fmt.Println("\n🐒 Добавление животного")
+	fmt.Print("Введите тип животного (Обезьяна, Тигр, Волк, Кролик): ")
+	scanner.Scan()
+	switch scanner.Text() {
+	case "Обезьяна":
+		food := GetValidFood()
+		friend := GetFriendless()
+		name := GetName()
+		db.SaveAnimal(name, "Обезьяна", food, friend, 0)
+		return animals.NewMonkey(name, food, friend)
+
+	case "Тигр":
+		food := GetValidFood()
+		name := GetName()
+		db.SaveAnimal(name, "Тигр", food, 0, 0)
+		return animals.NewTiger(name, food, 0)
+
+	case "Волк":
+		food := GetValidFood()
+		name := GetName()
+		db.SaveAnimal(name, "Волк", food, 0, 0)
+		return animals.NewWolf(name, food, 0)
+
+	case "Кролик":
+		food := GetValidFood()
+		friend := GetFriendless()
+		name := GetName()
+		db.SaveAnimal(name, "Кролик", food, friend, 0)
+		return animals.NewRabbit(name, food, friend)
+
+	default:
+		fmt.Println("Неизвестное животное.")
+		return nil
+	}
 }
