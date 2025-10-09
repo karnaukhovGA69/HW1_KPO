@@ -2,7 +2,7 @@ package tools
 
 import (
 	"fmt"
-
+	
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
@@ -33,7 +33,7 @@ func WriteConsole() {
 func SearchFunction(keyFunction string, app *tview.Application, menu *tview.List) {
 	switch keyFunction {
 	case "add":
-		// TODO: функция для добавления животного
+		AddAnimal(app, menu)
 	case "allAnimal":
 		// TODO: функция для отображения всех животных
 	case "handAnimal":
@@ -57,11 +57,9 @@ func changeLanguage(app *tview.Application, menu *tview.List) {
 		language := input.GetText()
 		items = ReadFile(language)
 
-		// очищаем старое меню
 		menu.Clear()
 		for i, item := range items {
 			displayText := fmt.Sprintf("%d) %s", i+1, item.Text)
-			// нужно зафиксировать переменную в лямбде
 			currentKey := item.Key
 			menu.AddItem(displayText, "", 0, func() { SearchFunction(currentKey, app, menu) })
 		}
@@ -75,4 +73,20 @@ func changeLanguage(app *tview.Application, menu *tview.List) {
 
 	// показываем поле ввода вместо меню
 	app.SetRoot(input, true).SetFocus(input)
+}
+
+func AddAnimal(app *tview.Application, menu *tview.List) {
+	
+	
+	
+	GetValidFood(app, menu, func(foodAmount int) {
+
+		confirmation := tview.NewModal().
+			SetText(fmt.Sprintf("✅ Успешно! Количество еды: %d", foodAmount)).
+			AddButtons([]string{"OK"}).
+			SetDoneFunc(func(buttonIndex int, buttonLabel string) {
+				app.SetRoot(menu, true)
+			})
+		app.SetRoot(confirmation, true)
+	})
 }
