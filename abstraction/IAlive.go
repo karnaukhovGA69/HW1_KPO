@@ -1,6 +1,6 @@
 package abstraction
 
-type IALive interface {
+type IAlive interface {
 	Food() int
 	ToString() string
 }

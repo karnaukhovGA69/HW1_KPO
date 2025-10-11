@@ -1,11 +1,15 @@
 package main
 
 import (
-	"main/tools"
+	"log"
+	"main/di"
 )
 
 func main() {
+	app, err := di.BuildApp()
+	if err != nil {
+		log.Fatalf("Ошибка сборки контейнера: %v", err)
+	}
 
-	tools.WriteConsole()
-
+	app.Run()
 }

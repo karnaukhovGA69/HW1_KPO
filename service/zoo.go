@@ -1,69 +1,76 @@
 package service
 
-import (
-	"main/abstraction"
-)
+import "main/abstraction"
+
+type Zoo interface {
+	Admit(a abstraction.IAlive)
+	AddInventory(x abstraction.IInventory)
+
+	GetAllAnimals() []abstraction.IAlive
+	GetAllHandAnimal(minFriend int) []abstraction.IHerbo
+	GetAllInventory() []abstraction.IInventory
+
+	CountFood() int
+	NextInventoryNumber() int
+}
 
 type MoscowZoo struct {
-	allAnimal      []abstraction.IALive
-	allHandAnimals []abstraction.IHerbo
-	allInventory   []abstraction.IInventory
+	animals   []abstraction.IAlive
+	hand      []abstraction.IHerbo
+	inventory []abstraction.IInventory
 }
 
-func (mz *MoscowZoo) GetAllAnimals() []abstraction.IALive {
-	if mz.allAnimal == nil {
-		mz.allAnimal = make([]abstraction.IALive, 0)
+func NewMoscowZoo() *MoscowZoo { return &MoscowZoo{} }
+
+// ЛОГИКА: животное всегда идёт в общий зоопарк;
+// в контактный — только если дружелюбность >= MinFriendlinessLevel.
+func (z *MoscowZoo) Admit(a abstraction.IAlive) {
+	z.animals = append(z.animals, a)
+
+	if h, ok := a.(abstraction.IHerbo); ok {
+		if h.Friendliness() >= MinFriendlinessLevel {
+			z.hand = append(z.hand, h)
+		}
 	}
-	return mz.allAnimal
-}
-
-func (mz *MoscowZoo) GetAllHandAnimal() []abstraction.IHerbo {
-	if mz.allHandAnimals == nil {
-		mz.allHandAnimals = make([]abstraction.IHerbo, 0)
-	}
-	return mz.allHandAnimals
-}
-
-func (mz *MoscowZoo) GetAllInventory() []abstraction.IInventory {
-	if mz.allInventory == nil {
-		mz.allInventory = make([]abstraction.IInventory, 0)
-	}
-	return mz.allInventory
-}
-
-func (mz *MoscowZoo) GetCountAllInventory() int {
-	mz.GetAllInventory()
-	return len(mz.allInventory)
-}
-
-func (mz *MoscowZoo) AddInventory(inventory abstraction.IInventory) {
-	mz.GetAllInventory()
-	mz.allInventory = append(mz.allInventory, inventory)
-}
-
-func (mz *MoscowZoo) AddAnimal(animal abstraction.IALive) {
-	mz.GetAllAnimals()
-	mz.allAnimal = append(mz.allAnimal, animal)
-	if h, ok := animal.(abstraction.IHerbo); ok {
-		mz.addHandAnimal(h)
-	}
-	if inv, ok := animal.(abstraction.IInventory); ok {
-		mz.AddInventory(inv)
+	if inv, ok := a.(abstraction.IInventory); ok {
+		z.inventory = append(z.inventory, inv)
 	}
 }
 
-func (mz *MoscowZoo) addHandAnimal(handAnimal abstraction.IHerbo) {
-	mz.GetAllHandAnimal()
-	mz.allHandAnimals = append(mz.allHandAnimals, handAnimal)
+func (z *MoscowZoo) AddInventory(x abstraction.IInventory) {
+	z.inventory = append(z.inventory, x)
 }
 
-var Zoo = &MoscowZoo{}
+func (z *MoscowZoo) GetAllAnimals() []abstraction.IAlive {
+	out := make([]abstraction.IAlive, len(z.animals))
+	copy(out, z.animals)
+	return out
+}
 
-func (mz *MoscowZoo) CountFood() int {
-	count := 0
-	animals := mz.GetAllAnimals()
-	for _, animal := range animals {
-		count += animal.Food()
+func (z *MoscowZoo) GetAllHandAnimal(minFriend int) []abstraction.IHerbo {
+	res := make([]abstraction.IHerbo, 0, len(z.hand))
+	for _, h := range z.hand {
+		if h.Friendliness() >= minFriend {
+			res = append(res, h)
+		}
 	}
-	return count
+	return res
+}
+
+func (z *MoscowZoo) GetAllInventory() []abstraction.IInventory {
+	out := make([]abstraction.IInventory, len(z.inventory))
+	copy(out, z.inventory)
+	return out
+}
+
+func (z *MoscowZoo) CountFood() int {
+	total := 0
+	for _, a := range z.animals {
+		total += a.Food()
+	}
+	return total
+}
+
+func (z *MoscowZoo) NextInventoryNumber() int {
+	return len(z.inventory) + 1
 }
