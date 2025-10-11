@@ -1,6 +1,8 @@
 package abstraction
 
-type Predator interface {
+type IPredator interface {
+	IALive
+	IInventory
 	Aggressiveness() int
 }
 

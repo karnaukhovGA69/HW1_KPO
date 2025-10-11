@@ -1,6 +1,8 @@
 package abstraction
 
-type Herbo interface {
+type IHerbo interface {
+	IALive
+	IInventory
 	Friendliness() int
 }
 

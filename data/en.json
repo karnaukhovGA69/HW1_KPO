@@ -4,6 +4,11 @@
 		"text": "Add animal 🐒"
 	},
 	{
+        "key": "addThing",
+  		"text": "Add item 📦"
+	},
+
+	{
 		"key": "allAnimal",
 		"text": "All animals in the zoo 🦁"
 	},
