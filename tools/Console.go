@@ -67,6 +67,10 @@ func (c *Console) getUserChoice() int {
 
 func (c *Console) waitForEnter() {
 	fmt.Print("\nНажмите Enter для продолжения...")
+	if c.in == nil {
+		fmt.Println()
+		return
+	}
 	c.in.Scan()
 }
 
