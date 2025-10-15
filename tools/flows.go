@@ -94,7 +94,6 @@ func (c *Console) GetAnimal() {
 	c.waitForEnter()
 }
 
-// маленький локальный помощник, чтобы не тащить strings в импорт
 func stringsTrimSpace(s string) string {
 	i := 0
 	j := len(s)

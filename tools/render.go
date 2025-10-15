@@ -28,10 +28,6 @@ func (c *Console) WriteAllInventory() {
 	}
 }
 
-// MinFriendLevel — единая точка, если решишь двигать порог (сейчас берём из service).
 func MinFriendLevel() int {
-	// импортировать service здесь ради одной константы не хотим —
-	// этот хелпер можешь держать здесь и менять при надобности.
-	// Если уже объявил service.MinFriendlinessLevel — просто верни его.
 	return 6
 }
